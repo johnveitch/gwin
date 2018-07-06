@@ -14,17 +14,17 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-This modules provides likelihood classes that have analytic solutions for the
+This modules provides models that have analytic solutions for the
 log likelihood.
 """
 
 import numpy
 from scipy import stats
 
-from .base import BaseLikelihoodEvaluator
+from .base import BaseModel
 
 
-class TestNormal(BaseLikelihoodEvaluator):
+class TestNormal(BaseModel):
     r"""The test distribution is an multi-variate normal distribution.
 
     The number of dimensions is set by the number of ``variable_args`` that are
@@ -42,7 +42,7 @@ class TestNormal(BaseLikelihoodEvaluator):
         The covariance matrix of the parameters. If None provided, will use
         unit variance for all parameters, with cross-terms set to 0.
     **kwargs :
-        All other keyword arguments are passed to ``BaseLikelihoodEvaluator``.
+        All other keyword arguments are passed to ``BaseModel``.
 
     """
     name = "test_normal"
@@ -69,7 +69,7 @@ class TestNormal(BaseLikelihoodEvaluator):
         return self._dist.logpdf([params[p] for p in self.variable_args])
 
 
-class TestEggbox(BaseLikelihoodEvaluator):
+class TestEggbox(BaseModel):
     r"""The test distribution is an 'eggbox' function:
 
     .. math::
@@ -85,7 +85,7 @@ class TestEggbox(BaseLikelihoodEvaluator):
     variable_args : (tuple of) string(s)
         A tuple of parameter names that will be varied.
     **kwargs :
-        All other keyword arguments are passed to ``BaseLikelihoodEvaluator``.
+        All other keyword arguments are passed to ``BaseModel``.
 
     """
     name = "test_eggbox"
@@ -104,7 +104,7 @@ class TestEggbox(BaseLikelihoodEvaluator):
             params[p]/2. for p in self.variable_args]))) ** 5
 
 
-class TestRosenbrock(BaseLikelihoodEvaluator):
+class TestRosenbrock(BaseModel):
     r"""The test distribution is the Rosenbrock function:
 
     .. math::
@@ -120,7 +120,7 @@ class TestRosenbrock(BaseLikelihoodEvaluator):
     variable_args : (tuple of) string(s)
         A tuple of parameter names that will be varied.
     **kwargs :
-        All other keyword arguments are passed to ``BaseLikelihoodEvaluator``.
+        All other keyword arguments are passed to ``BaseModel``.
 
     """
     name = "test_rosenbrock"
@@ -142,7 +142,7 @@ class TestRosenbrock(BaseLikelihoodEvaluator):
         return logl
 
 
-class TestVolcano(BaseLikelihoodEvaluator):
+class TestVolcano(BaseModel):
     r"""The test distribution is a two-dimensional 'volcano' function:
 
     .. math::
@@ -156,7 +156,7 @@ class TestVolcano(BaseLikelihoodEvaluator):
     variable_args : (tuple of) string(s)
         A tuple of parameter names that will be varied. Must have length 2.
     **kwargs :
-        All other keyword arguments are passed to ``BaseLikelihoodEvaluator``.
+        All other keyword arguments are passed to ``BaseModel``.
 
     """
     name = "test_volcano"

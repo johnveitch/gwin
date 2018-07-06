@@ -36,8 +36,7 @@ from pycbc.workflow import ConfigParser
 
 
 class _NoPrior(object):
-    """Dummy class to just return 0 if no prior is provided in a
-    likelihood generator.
+    """Dummy class to just return 0 if no prior is given to a model.
     """
     @staticmethod
     def apply_boundary_conditions(**params):
@@ -47,8 +46,8 @@ class _NoPrior(object):
         return 0.
 
 
-class BaseLikelihoodEvaluator(object):
-    r"""Base container class for computing posteriors.
+class BaseModel(object):
+    r"""Base container class for models.
 
     The nomenclature used by this class and those that inherit from it is as
     follows: Given some model parameters :math:`\Theta` and some data
@@ -289,7 +288,7 @@ class BaseLikelihoodEvaluator(object):
         return kwargs
 
     @classmethod
-    def get_args_from_config(cls, cp, section="likelihood",
+    def get_args_from_config(cls, cp, section="model",
                              prior_section="prior"):
         """Gets arguments and keyword arguments from a config file.
 
@@ -298,7 +297,7 @@ class BaseLikelihoodEvaluator(object):
         cp : WorkflowConfigParser
             Config file parser to read.
         section : str, optional
-            Section to read from. Default is 'likelihood'.
+            Section to read from. Default is 'model'.
         prior_section : str, optional
             Section(s) to read prior(s) from. Default is 'prior'.
 
@@ -331,7 +330,7 @@ class BaseLikelihoodEvaluator(object):
         return args
 
     @classmethod
-    def from_config(cls, cp, section="likelihood", prior_section="prior",
+    def from_config(cls, cp, section="model", prior_section="prior",
                     **kwargs):
         """Initializes an instance of this class from the given config file.
 
@@ -340,8 +339,8 @@ class BaseLikelihoodEvaluator(object):
         cp : WorkflowConfigParser
             Config file parser to read.
         section : str, optional
-            The section to read the arguments to the likelihood class from.
-            Default is 'likelihood'.
+            The section to read the arguments to the model class from.
+            Default is 'model'.
         prior_section : str, optional
             The section to read the prior arguments from. Default is 'prior'.
         \**kwargs :
@@ -639,11 +638,11 @@ class BaseLikelihoodEvaluator(object):
     __call__ = evaluate
 
 
-class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
-    r"""A likelihood evaulator that requires data and a waveform generator.
+class DataModel(BaseModel):
+    r"""A model that requires data and a waveform generator.
 
-    Like ``BaseLikelihoodEvaluator``, this class only provides boiler-plate
-    attributes and methods for evaluating likelihoods. Classes that make use
+    Like ``BaseModel``, this class only provides boiler-plate
+    attributes and methods for evaluating models. Classes that make use
     of data and a waveform generator should inherit from this.
 
     Parameters
@@ -660,7 +659,7 @@ class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
         understood by the waveform generator.
 
     \**kwargs :
-        All other keyword arguments are passed to ``BaseLikelihoodEvaluator``.
+        All other keyword arguments are passed to ``BaseModel``.
 
     Attributes
     ----------
@@ -669,7 +668,7 @@ class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
     data : dict
         The data that the class was initialized with.
 
-    For additional attributes and methods, see ``BaseLikelihoodEvaluator``.
+    For additional attributes and methods, see ``BaseModel``.
     """
     name = None
 
@@ -679,7 +678,7 @@ class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
         self._data = {ifo: d.copy() for (ifo, d) in data.items()}
         self._waveform_generator = waveform_generator
         self._waveform_transforms = waveform_transforms
-        super(DataBasedLikelihoodEvaluator, self).__init__(
+        super(DataModel, self).__init__(
             variable_args, **kwargs)
 
     @property
@@ -694,7 +693,7 @@ class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
 
     def _transform_params(self, params):
         """Adds waveform transforms to parent's ``_transform_params``."""
-        params = super(DataBasedLikelihoodEvaluator, self)._transform_params(
+        params = super(DataModel, self)._transform_params(
             params)
         # apply waveform transforms
         if self._waveform_transforms is not None:
@@ -704,10 +703,10 @@ class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
         return params
 
     @classmethod
-    def get_args_from_config(cls, cp, section="likelihood",
+    def get_args_from_config(cls, cp, section="model",
                              prior_section="prior"):
         # adds waveform transforms to the arguments
-        args = super(DataBasedLikelihoodEvaluator, cls).get_args_from_config(
+        args = super(DataModel, cls).get_args_from_config(
             cp, section=section, prior_section=prior_section)
         if any(cp.get_subsections('waveform_transforms')):
             logging.info("Loading waveform transforms")
@@ -719,7 +718,7 @@ class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
     @classmethod
     def from_config(cls, cp, data, delta_f=None, delta_t=None,
                     gates=None, recalibration=None,
-                    section="likelihood", prior_section="prior",
+                    section="model", prior_section="prior",
                     **kwargs):
         """Initializes an instance of this class from the given config file.
 
@@ -743,8 +742,8 @@ class DataBasedLikelihoodEvaluator(BaseLikelihoodEvaluator):
             Dictionary of detectors -> tuples of specifying gate times. The
             sort of thing returned by `pycbc.gate.gates_from_cli`.
         section : str, optional
-            The section to read the arguments to the likelihood class from.
-            Default is 'likelihood'.
+            The section to read the arguments to the model class from.
+            Default is 'model'.
         prior_section : str, optional
             The section to read the prior arguments from. Default is 'prior'.
         \**kwargs :
