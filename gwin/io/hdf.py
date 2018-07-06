@@ -111,7 +111,7 @@ class InferenceFile(h5py.File):
     """
     name = "hdf"
     samples_group = 'samples'
-    stats_group = 'likelihood_stats'
+    stats_group = 'model_stats'
     sampler_group = 'sampler_states'
 
     def __init__(self, path, mode=None, **kwargs):
@@ -149,9 +149,9 @@ class InferenceFile(h5py.File):
             return self.sampler_class
 
     @property
-    def likelihood_eval_name(self):
-        """Returns the name of the likelihood evaluator that was used."""
-        return self.attrs["likelihood_evaluator"]
+    def model_name(self):
+        """Returns the name of the model that was used."""
+        return self.attrs["model"]
 
     @property
     def variable_args(self):
@@ -312,20 +312,20 @@ class InferenceFile(h5py.File):
                                                 samples_group=samples_group,
                                                 **kwargs)
 
-    def read_likelihood_stats(self, **kwargs):
-        """Reads likelihood stats from self.
+    def read_model_stats(self, **kwargs):
+        """Reads model stats from self.
 
         Parameters
         -----------
         **kwargs :
             The keyword args are passed to the sampler's
-            `read_likelihood_stats` method.
+            ``read_model_stats`` method.
 
         Returns
         -------
         stats : {FieldArray, None}
             Likelihood stats in the file, as a FieldArray. The fields of the
-            array are the names of the stats that are in the `likelihood_stats`
+            array are the names of the stats that are in the ``model_stats``
             group.
         """
         parameters = self[self.stats_group].keys()
@@ -689,7 +689,7 @@ class InferenceFile(h5py.File):
             should map parameter -> parameter name. If None, will just use the
             original parameter names.
         posterior_only : bool, optional
-            Write the samples and likelihood stats as flattened arrays, and
+            Write the samples and model stats as flattened arrays, and
             set other's posterior_only attribute. For example, if this file
             has a parameter's samples written to
             `{samples_group}/{param}/walker{x}`, then other will have all of
@@ -735,9 +735,9 @@ class InferenceFile(h5py.File):
         logging.info("Writing samples")
         other.samples_parser.write_samples_group(other, self.samples_group,
                                                  samples.fieldnames, samples)
-        # do the same for the likelihood stats
+        # do the same for the model stats
         logging.info("Reading stats to copy")
-        stats = self.read_likelihood_stats(**kwargs)
+        stats = self.read_model_stats(**kwargs)
         logging.info("Writing stats")
         other.samples_parser.write_samples_group(other, self.stats_group,
                                                  stats.fieldnames, stats)
