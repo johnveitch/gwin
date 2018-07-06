@@ -49,9 +49,8 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
 
     Parameters
     ----------
-    likelihood_evaluator : likelihood class
-        An instance of the likelihood class from the
-        gwin.likelihood module.
+    model : model
+        A model from ``gwin.models``.
     nwalkers : int
         Number of walkers to use in sampler.
     pool : function with map, Optional
@@ -61,19 +60,19 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
     """
     name = "emcee"
 
-    def __init__(self, likelihood_evaluator, nwalkers, pool=None,
-                 likelihood_call=None):
+    def __init__(self, model, nwalkers, pool=None,
+                 model_call=None):
         try:
             import emcee
         except ImportError:
             raise ImportError("emcee is not installed.")
 
-        if likelihood_call is None:
-            likelihood_call = likelihood_evaluator
+        if model_call is None:
+            model_call = model
 
-        ndim = len(likelihood_evaluator.variable_args)
+        ndim = len(model.variable_args)
         sampler = emcee.EnsembleSampler(nwalkers, ndim,
-                                        likelihood_call,
+                                        model_call,
                                         pool=pool)
         # emcee uses it's own internal random number generator; we'll set it
         # to have the same state as the numpy generator
@@ -81,12 +80,12 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
         sampler.random_state = rstate
         # initialize
         super(EmceeEnsembleSampler, self).__init__(
-              sampler, likelihood_evaluator)
+              sampler, model)
         self._nwalkers = nwalkers
 
     @classmethod
-    def from_cli(cls, opts, likelihood_evaluator, pool=None,
-                 likelihood_call=None):
+    def from_cli(cls, opts, model, pool=None,
+                 model_call=None):
         """Create an instance of this sampler from the given command-line
         options.
 
@@ -94,16 +93,16 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
         ----------
         opts : ArgumentParser options
             The options to parse.
-        likelihood_evaluator : LikelihoodEvaluator
-            The likelihood evaluator to use with the sampler.
+        model : LikelihoodEvaluator
+            The model to use with the sampler.
 
         Returns
         -------
         EmceeEnsembleSampler
             An emcee sampler initialized based on the given arguments.
         """
-        return cls(likelihood_evaluator, opts.nwalkers,
-                   pool=pool, likelihood_call=likelihood_call)
+        return cls(model, opts.nwalkers,
+                   pool=pool, model_call=model_call)
 
     @property
     def lnpost(self):
@@ -138,7 +137,7 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
             starting positions.
         prior : JointDistribution, optional
             Use the given prior to set the initial positions rather than
-            `likelihood_evaultor`'s prior.
+            ``model``'s prior.
 
         Returns
         -------
@@ -196,7 +195,7 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
 
     def write_results(self, fp, start_iteration=None,
                       max_iterations=None, **metadata):
-        """Writes metadata, samples, likelihood stats, and acceptance fraction
+        """Writes metadata, samples, model stats, and acceptance fraction
         to the given file. See the write function for each of those for
         details.
 
@@ -219,7 +218,7 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
         self.write_metadata(fp, **metadata)
         self.write_chain(fp, start_iteration=start_iteration,
                          max_iterations=max_iterations)
-        self.write_likelihood_stats(fp, start_iteration=start_iteration,
+        self.write_model_stats(fp, start_iteration=start_iteration,
                                     max_iterations=max_iterations)
         self.write_acceptance_fraction(fp)
         self.write_state(fp)
@@ -229,10 +228,10 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
 # 1) pools freeze state when created and so classes *cannot be updated*
 # 2) methods cannot be pickled.
 class _callprior(object):
-    """Calls the likelihood function's prior function, and ensures that no
+    """Calls the model's prior function, and ensures that no
     metadata is returned."""
-    def __init__(self, likelihood_call):
-        self.callable = likelihood_call
+    def __init__(self, model_call):
+        self.callable = model_call
 
     def __call__(self, args):
         prior = self.callable(args, callfunc='prior')
@@ -240,10 +239,10 @@ class _callprior(object):
 
 
 class _callloglikelihood(object):
-    """Calls the likelihood function's loglikelihood function.
+    """Calls the model's loglikelihood function.
     """
-    def __init__(self, likelihood_call):
-        self.callable = likelihood_call
+    def __init__(self, model_call):
+        self.callable = model_call
 
     def __call__(self, args):
         return self.callable(args, callfunc='loglikelihood')
@@ -255,9 +254,8 @@ class EmceePTSampler(BaseMCMCSampler):
 
     Parameters
     ----------
-    likelihood_evaluator : likelihood class
-        An instance of the likelihood class from the
-        gwin.likelihood module.
+    model : model
+        A model from ``gwin.models``.
     ntemps : int
         Number of temeratures to use in the sampler.
     nwalkers : int
@@ -269,33 +267,33 @@ class EmceePTSampler(BaseMCMCSampler):
     """
     name = "emcee_pt"
 
-    def __init__(self, likelihood_evaluator, ntemps, nwalkers, pool=None,
-                 likelihood_call=None):
+    def __init__(self, model, ntemps, nwalkers, pool=None,
+                 model_call=None):
 
         try:
             import emcee
         except ImportError:
             raise ImportError("emcee is not installed.")
 
-        if likelihood_call is None:
-            likelihood_call = likelihood_evaluator
+        if model_call is None:
+            model_call = model
 
         # construct the sampler: PTSampler needs the likelihood and prior
         # functions separately
-        ndim = len(likelihood_evaluator.variable_args)
+        ndim = len(model.variable_args)
         sampler = emcee.PTSampler(ntemps, nwalkers, ndim,
-                                  _callloglikelihood(likelihood_call),
-                                  _callprior(likelihood_call),
+                                  _callloglikelihood(model_call),
+                                  _callprior(model_call),
                                   pool=pool)
         # initialize
         super(EmceePTSampler, self).__init__(
-              sampler, likelihood_evaluator)
+              sampler, model)
         self._nwalkers = nwalkers
         self._ntemps = ntemps
 
     @classmethod
-    def from_cli(cls, opts, likelihood_evaluator, pool=None,
-                 likelihood_call=None):
+    def from_cli(cls, opts, model, pool=None,
+                 model_call=None):
         """Create an instance of this sampler from the given command-line
         options.
 
@@ -303,16 +301,16 @@ class EmceePTSampler(BaseMCMCSampler):
         ----------
         opts : ArgumentParser options
             The options to parse.
-        likelihood_evaluator : LikelihoodEvaluator
-            The likelihood evaluator to use with the sampler.
+        model : LikelihoodEvaluator
+            The model to use with the sampler.
 
         Returns
         -------
         EmceePTSampler
             An emcee sampler initialized based on the given arguments.
         """
-        return cls(likelihood_evaluator, opts.ntemps, opts.nwalkers,
-                   pool=pool, likelihood_call=likelihood_call)
+        return cls(model, opts.ntemps, opts.nwalkers,
+                   pool=pool, model_call=model_call)
 
     @property
     def ntemps(self):
@@ -335,7 +333,7 @@ class EmceePTSampler(BaseMCMCSampler):
         self._sampler.reset()
 
     @property
-    def likelihood_stats(self):
+    def model_stats(self):
         """Returns the log likelihood ratio and log prior as a FieldArray.
         The returned array has shape ntemps x nwalkers x niterations.
         """
@@ -344,14 +342,14 @@ class EmceePTSampler(BaseMCMCSampler):
         # get prior from posterior
         logp = self._sampler.lnprobability - logl
         # compute the likelihood ratio
-        loglr = logl - self.likelihood_evaluator.lognl
+        loglr = logl - self.model.lognl
         kwargs = {'loglr': loglr, 'prior': logp}
         # if different coordinates were used for sampling, get the jacobian
-        if self.likelihood_evaluator.sampling_transforms is not None:
+        if self.model.sampling_transforms is not None:
             samples = self.samples
             # convert to dict
             d = {param: samples[param] for param in samples.fieldnames}
-            logj = self.likelihood_evaluator.logjacobian(**d)
+            logj = self.model.logjacobian(**d)
             kwargs['logjacobian'] = logj
         return FieldArray.from_kwargs(**kwargs)
 
@@ -373,7 +371,7 @@ class EmceePTSampler(BaseMCMCSampler):
             starting positions.
         prior : JointDistribution, optional
             Use the given prior to set the initial positions rather than
-            `likelihood_evaultor`'s prior.
+            ``model``'s prior.
 
         Returns
         -------
@@ -392,11 +390,11 @@ class EmceePTSampler(BaseMCMCSampler):
                                         iteration=-1, temps='all',
                                         flatten=False)[..., 0]
             # transform to sampling parameter space
-            samples = self.likelihood_evaluator.apply_sampling_transforms(
+            samples = self.model.apply_sampling_transforms(
                 samples)
         # draw random samples if samples are not provided
         else:
-            samples = self.likelihood_evaluator.prior_rvs(
+            samples = self.model.prior_rvs(
                 size=nwalkers*ntemps, prior=prior).reshape((ntemps, nwalkers))
         # convert to array
         for i, param in enumerate(self.sampling_args):
@@ -569,7 +567,7 @@ class EmceePTSampler(BaseMCMCSampler):
 
     def write_results(self, fp, start_iteration=None, max_iterations=None,
                       **metadata):
-        """Writes metadata, samples, likelihood stats, and acceptance fraction
+        """Writes metadata, samples, model stats, and acceptance fraction
         to the given file. See the write function for each of those for
         details.
 
@@ -592,7 +590,7 @@ class EmceePTSampler(BaseMCMCSampler):
         self.write_metadata(fp, **metadata)
         self.write_chain(fp, start_iteration=start_iteration,
                          max_iterations=max_iterations)
-        self.write_likelihood_stats(fp, start_iteration=start_iteration,
+        self.write_model_stats(fp, start_iteration=start_iteration,
                                     max_iterations=max_iterations)
         self.write_acceptance_fraction(fp)
         self.write_state(fp)
@@ -601,8 +599,8 @@ class EmceePTSampler(BaseMCMCSampler):
     def _read_fields(fp, fields_group, fields, array_class,
                      thin_start=None, thin_interval=None, thin_end=None,
                      iteration=None, temps=None, walkers=None, flatten=True):
-        """Base function for reading samples and likelihood stats. See
-        `read_samples` and `read_likelihood_stats` for details.
+        """Base function for reading samples and model stats. See
+        `read_samples` and `read_model_stats` for details.
 
         Parameters
         -----------
@@ -617,7 +615,7 @@ class EmceePTSampler(BaseMCMCSampler):
             The type of array to return. Must have a `from_kwargs` attribute.
 
         For other details on keyword arguments, see `read_samples` and
-        `read_likelihood_stats`.
+        `read_model_stats`.
 
         Returns
         -------

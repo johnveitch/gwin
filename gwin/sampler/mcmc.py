@@ -46,12 +46,12 @@ class MCMCSampler(BaseMCMCSampler):
 
     Parameters
     ----------
-    likelihood_evaluator : LikelihoodEvaluator
-        An instance of a gwin.likelihood evaluator.
+    model : Model
+        A model from ``gwin.models``.
     """
     name = "mcmc"
 
-    def __init__(self, likelihood_evaluator):
+    def __init__(self, model):
         self._chain = []
         self._blobs = []
         # Using p0 to store the last sample would require to store separately
@@ -60,7 +60,7 @@ class MCMCSampler(BaseMCMCSampler):
         self._lastblob = []
         sampler = self
         # initialize
-        super(MCMCSampler, self).__init__(sampler, likelihood_evaluator)
+        super(MCMCSampler, self).__init__(sampler, model)
         self.dtype = numpy.dtype([(name, None) for name in
                                   ('lnpost',) + self.sampling_args])
         # Harcoding the number of walkers to 1.
@@ -68,8 +68,8 @@ class MCMCSampler(BaseMCMCSampler):
         self._nwalkers = 1
 
     @classmethod
-    def from_cli(cls, opts, likelihood_evaluator, pool=None,
-                 likelihood_call=None):
+    def from_cli(cls, opts, model, pool=None,
+                 model_call=None):
         """Create an instance of this sampler from the given command-line
         options.
 
@@ -77,15 +77,15 @@ class MCMCSampler(BaseMCMCSampler):
         ----------
         opts : ArgumentParser options
             The options to parse.
-        likelihood_evaluator : LikelihoodEvaluator
-            The likelihood evaluator to use with the sampler.
+        model : Model
+            A model from ``gwin.models``.
 
         Returns
         -------
         MCMCSampler
             A MCMC sampler initialized based on the given arguments.
         """
-        return cls(likelihood_evaluator)
+        return cls(model)
 
     @property
     def chain(self):
@@ -145,11 +145,11 @@ class MCMCSampler(BaseMCMCSampler):
         if not self._lastsample:
             # first time running, use the initial positions
             # set_p0() was called in pycbc_inference, so self.p0 is set
-            result = self.likelihood_evaluator(self.p0)
+            result = self.model(self.p0)
             try:
                 logplr, blob = result
             except TypeError:
-                # likelihood evaluator doesn't return blobs
+                # model doesn't return blobs
                 logplr = result
                 blob = None
 
@@ -181,11 +181,11 @@ class MCMCSampler(BaseMCMCSampler):
             samples_prop = [sample + numpy.random.normal(loc=0.0, scale=1.0)
                             for sample in samples]
 
-            result = self.likelihood_evaluator(samples_prop)
+            result = self.model(samples_prop)
             try:
                 logplr_prop, blob = result
             except TypeError:
-                # likelihood evaluator doesn't return blobs
+                # model doesn't return blobs
                 logplr_prop = result
                 blob = None
 

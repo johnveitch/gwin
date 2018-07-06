@@ -47,18 +47,18 @@ class _BaseSampler(object):
 
     Parameters
     ----------
-    likelihood_evaluator : LikelihoodEvaluator
-        An instance of a gwin.likelihood evaluator.
+    model : Model
+        An instance of a model from ``gwin.models``.
     """
     name = None
 
-    def __init__(self, likelihood_evaluator):
-        self.likelihood_evaluator = likelihood_evaluator
+    def __init__(self, model):
+        self.model = model
         self.lastclear = 0
 
     @classmethod
-    def from_cli(cls, opts, likelihood_evaluator, pool=None,
-                 likelihood_call=None):
+    def from_cli(cls, opts, model, pool=None,
+                 model_call=None):
         """This function create an instance of this sampler from the given
         command-line options.
         """
@@ -66,15 +66,15 @@ class _BaseSampler(object):
 
     @property
     def variable_args(self):
-        """Returns the variable args used by the likelihood evaluator.
+        """Returns the variable args used by the model.
         """
-        return self.likelihood_evaluator.variable_args
+        return self.model.variable_args
 
     @property
     def sampling_args(self):
-        """Returns the sampling args used by the likelihood evaluator.
+        """Returns the sampling args used by the model.
         """
-        return self.likelihood_evaluator.sampling_args
+        return self.model.sampling_args
 
     @property
     def chain(self):
@@ -121,13 +121,13 @@ class _BaseSampler(object):
         return NotImplementedError("lnpost function not set.")
 
     @property
-    def likelihood_stats(self):
+    def model_stats(self):
         """This function should return the prior and likelihood ratio of
         samples as an [additional dimensions] x niterations
-        array. If the likelihood evaluator did not return that info to the
+        array. If the model did not return that info to the
         sampler, it should return None.
         """
-        return NotImplementedError("likelihood stats not set")
+        return NotImplementedError("model stats not set")
 
     def burn_in(self, initial_values):
         """This function should burn in the sampler.
@@ -164,11 +164,11 @@ class _BaseSampler(object):
             key is then stored as a separate attr with its corresponding value.
         """
         fp.attrs['sampler'] = self.name
-        fp.attrs['likelihood_evaluator'] = self.likelihood_evaluator.name
+        fp.attrs['model'] = self.model.name
         fp.attrs['variable_args'] = list(self.variable_args)
         fp.attrs['sampling_args'] = list(self.sampling_args)
         fp.attrs["niterations"] = self.niterations
-        fp.attrs["lognl"] = self.likelihood_evaluator.lognl
+        fp.attrs["lognl"] = self.model.lognl
         for arg, val in kwargs.items():
             if val is None:
                 val = str(None)
@@ -245,9 +245,8 @@ class BaseMCMCSampler(_BaseSampler):
     ----------
     sampler : sampler instance
         An instance of an MCMC sampler similar to kombine or emcee.
-    likelihood_evaluator : likelihood class
-        An instance of the likelihood class from the
-        gwin.likelihood module.
+    model : model class
+        A model from ``gwin.models``.
 
     Attributes
     ----------
@@ -261,7 +260,7 @@ class BaseMCMCSampler(_BaseSampler):
     """
     name = None
 
-    def __init__(self, sampler, likelihood_evaluator):
+    def __init__(self, sampler, model):
         self._sampler = sampler
         self._pos = None
         self._p0 = None
@@ -270,7 +269,7 @@ class BaseMCMCSampler(_BaseSampler):
         self.lastclear = 0
         self.burn_in_iterations = None
         # initialize
-        super(BaseMCMCSampler, self).__init__(likelihood_evaluator)
+        super(BaseMCMCSampler, self).__init__(model)
 
     @property
     def sampler(self):
@@ -290,7 +289,7 @@ class BaseMCMCSampler(_BaseSampler):
             starting positions.
         prior : JointDistribution, optional
             Use the given prior to set the initial positions rather than
-            `likelihood_evaultor`'s prior.
+            ``model``'s prior.
 
         Returns
         -------
@@ -306,11 +305,11 @@ class BaseMCMCSampler(_BaseSampler):
             samples = self.read_samples(samples_file, self.variable_args,
                                         iteration=-1)
             # transform to sampling parameter space
-            samples = self.likelihood_evaluator.apply_sampling_transforms(
+            samples = self.model.apply_sampling_transforms(
                 samples)
         # draw random samples if samples are not provided
         else:
-            samples = self.likelihood_evaluator.prior_rvs(size=nwalkers,
+            samples = self.model.prior_rvs(size=nwalkers,
                                                           prior=prior)
         # convert to 2D array
         for i, param in enumerate(self.sampling_args):
@@ -351,22 +350,22 @@ class BaseMCMCSampler(_BaseSampler):
         # convert to dictionary to apply boundary conditions
         samples = {param: samples[..., ii] for
                    ii, param in enumerate(sampling_args)}
-        samples = self.likelihood_evaluator._prior.apply_boundary_conditions(
+        samples = self.model._prior.apply_boundary_conditions(
             **samples)
         # now convert to field array
         samples = FieldArray.from_arrays([samples[param]
                                           for param in sampling_args],
                                          names=sampling_args)
         # apply transforms to go to variable args space
-        return self.likelihood_evaluator.apply_sampling_transforms(
+        return self.model.apply_sampling_transforms(
             samples, inverse=True)
 
     @property
-    def likelihood_stats(self):
-        """Returns the likelihood stats as a FieldArray, with field names
-        corresponding to the type of data returned by the likelihood evaluator.
+    def model_stats(self):
+        """Returns the model stats as a FieldArray, with field names
+        corresponding to the type of data returned by the model.
         The returned array has shape nwalkers x niterations. If no additional
-        stats were returned to the sampler by the likelihood evaluator, returns
+        stats were returned to the sampler by the model, returns
         None.
         """
         stats = numpy.array(self._sampler.blobs)
@@ -376,7 +375,7 @@ class BaseMCMCSampler(_BaseSampler):
         # blobs, they will be changed to `nan`s
         arrays = {field: stats[..., fi].astype(float)
                   for fi, field in
-                  enumerate(self.likelihood_evaluator.metadata_fields)}
+                  enumerate(self.model.metadata_fields)}
         return FieldArray.from_kwargs(**arrays).transpose()
 
     # write and read functions
@@ -465,7 +464,7 @@ class BaseMCMCSampler(_BaseSampler):
             `fp[fp.samples_group/{field}/(temp{k}/)walker{i}]`,
 
         where `{i}` is the index of a walker, `{field}` is the name of each
-        field returned by `likelihood_stats`, and, if the sampler is
+        field returned by ``model_stats``, and, if the sampler is
         multitempered, `{k}` is the temperature.
 
         Parameters
@@ -493,18 +492,18 @@ class BaseMCMCSampler(_BaseSampler):
                                  start_iteration=start_iteration,
                                  max_iterations=max_iterations)
 
-    def write_likelihood_stats(self, fp, start_iteration=None,
+    def write_model_stats(self, fp, start_iteration=None,
                                max_iterations=None):
-        """Writes the `likelihood_stats` to the given file.
+        """Writes the ``model_stats`` to the given file.
 
         Results are written to:
 
             `fp[fp.stats_group/{field}/(temp{k}/)walker{i}]`,
 
         where `{i}` is the index of a walker, `{field}` is the name of each
-        field returned by `likelihood_stats`, and, if the sampler is
+        field returned by ``model_stats``, and, if the sampler is
         multitempered, `{k}` is the temperature.  If nothing is returned by
-        `likelihood_stats`, this does nothing.
+        ``model_stats``, this does nothing.
 
         Parameters
         -----------
@@ -526,7 +525,7 @@ class BaseMCMCSampler(_BaseSampler):
             The stats that were written, as a FieldArray. If there were no
             stats, returns None.
         """
-        samples = self.likelihood_stats
+        samples = self.model_stats
         if samples is None:
             return None
         # ensure the prior is in the variable args parameter space
@@ -558,7 +557,7 @@ class BaseMCMCSampler(_BaseSampler):
 
     def write_results(self, fp, start_iteration=None,
                       max_iterations=None, **metadata):
-        """Writes metadata, samples, likelihood stats, and acceptance fraction
+        """Writes metadata, samples, model stats, and acceptance fraction
         to the given file. Also computes and writes the autocorrleation lengths
         of the chains. See the various write function for details.
 
@@ -581,7 +580,7 @@ class BaseMCMCSampler(_BaseSampler):
         self.write_metadata(fp, **metadata)
         self.write_chain(fp, start_iteration=start_iteration,
                          max_iterations=max_iterations)
-        self.write_likelihood_stats(fp, start_iteration=start_iteration,
+        self.write_model_stats(fp, start_iteration=start_iteration,
                                     max_iterations=max_iterations)
         self.write_acceptance_fraction(fp)
         self.write_state(fp)
@@ -590,8 +589,8 @@ class BaseMCMCSampler(_BaseSampler):
     def _read_fields(fp, fields_group, fields, array_class,
                      thin_start=None, thin_interval=None, thin_end=None,
                      iteration=None, walkers=None, flatten=True):
-        """Base function for reading samples and likelihood stats. See
-        `read_samples` and `read_likelihood_stats` for details.
+        """Base function for reading samples and model stats. See
+        `read_samples` and `read_model_stats` for details.
 
         Parameters
         -----------
@@ -606,7 +605,7 @@ class BaseMCMCSampler(_BaseSampler):
             The type of array to return. Must have a `from_kwargs` attribute.
 
         For other details on keyword arguments, see `read_samples` and
-        `read_likelihood_stats`.
+        `read_model_stats`.
 
         Returns
         -------
