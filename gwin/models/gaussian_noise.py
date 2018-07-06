@@ -190,7 +190,7 @@ class GaussianNoise(DataModel):
     >>> model.logposterior(tc=tsig)
     ArrayWithAligned(0.9162907318741418)
     """
-    name = 'gaussian'
+    name = 'gaussian_noise'
 
     def __init__(self, variable_args, data, waveform_generator,
                  f_lower, psds=None, f_upper=None, norm=None,
