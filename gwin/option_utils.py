@@ -361,7 +361,7 @@ def data_from_cli(opts):
         for ifo in gates:
             stilde_dict[ifo] /= psd_dict[ifo]
         stilde_dict = apply_gates_to_fd(stilde_dict, gates)
-        # unwhiten the data for the model 
+        # unwhiten the data for the model
         for ifo in gates:
             stilde_dict[ifo] *= psd_dict[ifo]
 
