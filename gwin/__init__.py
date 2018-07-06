@@ -19,7 +19,7 @@ using Bayesian Inference.
 """
 
 from ._version import get_versions
-from .likelihood import *
+from .models import *
 from .sampler import *
 from .burn_in import *
 
