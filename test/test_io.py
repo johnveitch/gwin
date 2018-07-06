@@ -77,9 +77,9 @@ class TestInferenceFile(object):
         empty.attrs['posterior_only'] = postonly
         assert empty.samples_parser is parser
 
-    def likelihood_eval_name(self, empty):
-        empty.attrs['likelihood_evaluator'] = 'anything'
-        assert empty.likelihood_eval_name == 'anything'
+    def model_name(self, empty):
+        empty.attrs['model_name'] = 'anything'
+        assert empty.model_name == 'anything'
 
     def test_static_args(self, empty):
         empty.attrs['arg1'] = 1
@@ -126,6 +126,6 @@ class TestInferenceFile(object):
         return self._test_read(empty, 'read_samples', group,
                                ['x'], samples_group=samples_group)
 
-    def test_read_likelihood_stats(self, empty):
-        return self._test_read(empty, 'read_likelihood_stats',
+    def test_read_model_stats(self, empty):
+        return self._test_read(empty, 'read_model_stats',
                                empty.stats_group)
