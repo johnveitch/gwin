@@ -44,7 +44,7 @@ b = 2
 [model]
 name = gaussian_noise
 
-[variable_args]
+[model_params]
 mass1 =
 mass2 =
 
@@ -60,11 +60,11 @@ name = mtotal_lt
 constraint_arg = anything
 required_parameters = mass1,mass2
 
-[sampling_parameters]
+[sampling_params]
 mass1, mass2 = mchirp, logitq
 spin1_a = logitspin1_a
 
-[test_sampling_parameters]
+[test_sampling_params]
 a, b = c, d
 """
 
@@ -126,8 +126,8 @@ def test_config_parser_from_cli(overrides):
      {'mass1', 'mass2', 'spin1_a'}),
     ('test', {'c', 'd'}, {'a', 'b'}),
 ])
-def test_read_sampling_args_from_config(config, prefix, out1, out2):
-    spars, rpars = models.base.read_sampling_args_from_config(
+def test_read_sampling_params_from_config(config, prefix, out1, out2):
+    spars, rpars = models.base.read_sampling_params_from_config(
         config, section_group=prefix)
     assert spars == list(out1)
     assert rpars == list(out2)

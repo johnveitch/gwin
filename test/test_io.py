@@ -41,8 +41,8 @@ class TestInferenceFile(object):
             yield h5f
 
     @pytest.mark.parametrize('prop', [
-        'variable_args',
-        'sampling_args',
+        'model_params',
+        'sampling_params',
         'lognl',
         'niterations',
         'burn_in_iterations',

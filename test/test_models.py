@@ -50,7 +50,7 @@ class TestBaseModel(_TestBase):
         return self.TEST_CLASS([])
 
     def test_defaults(self, simple):
-        assert simple.variable_args is tuple()
+        assert simple.model_params is tuple()
         assert isinstance(simple._prior, models.base._NoPrior)
 
     @pytest.mark.parametrize('transforms, params, result', [
