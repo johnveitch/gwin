@@ -229,7 +229,7 @@ def validate_checkpoint_files(checkpoint_file, backup_file):
     if checkpoint_valid:
         with InferenceFile(checkpoint_file, 'r') as fp:
             try:
-                group = '{}/{}'.format(fp.samples_group, fp.variable_args[0])
+                group = '{}/{}'.format(fp.samples_group, fp.model_params[0])
                 nsamples = fp[group].size
                 checkpoint_valid = nsamples != 0
             except KeyError:
@@ -238,7 +238,7 @@ def validate_checkpoint_files(checkpoint_file, backup_file):
     if backup_valid:
         with InferenceFile(backup_file, 'r') as fp:
             try:
-                group = '{}/{}'.format(fp.samples_group, fp.variable_args[0])
+                group = '{}/{}'.format(fp.samples_group, fp.model_params[0])
                 backup_nsamples = fp[group].size
                 backup_valid = backup_nsamples != 0
             except KeyError:
@@ -398,8 +398,8 @@ def add_inference_results_option_group(parser, include_parameters_group=True):
     results_reading_group.add_argument(
         "--parameters", type=str, nargs="+", metavar="PARAM[:LABEL]",
         help="Name of parameters to load. If none provided will load all of "
-             "the variable args in the input-file. If provided, the "
-             "parameters can be any of the variable args or posteriors in "
+             "the model params in the input-file. If provided, the "
+             "parameters can be any of the model params or posteriors in "
              "the input file, derived parameters from them, or any function "
              "of them. Syntax for functions is python; any math functions in "
              "the numpy libary may be used. Can optionally also specify a "
@@ -516,7 +516,7 @@ def results_from_cli(opts, load_samples=True, **kwargs):
         fp = InferenceFile(input_file, "r")
 
         # get parameters and a dict of labels for each parameter
-        parameters = (fp.variable_args if opts.parameters is None
+        parameters = (fp.model_params if opts.parameters is None
                       else opts.parameters)
         parameters, ldict = parse_parameters_opt(parameters)
 
@@ -535,7 +535,7 @@ def results_from_cli(opts, load_samples=True, **kwargs):
 
             # check if need extra parameters for a non-sampling parameter
             file_parameters, ts = transforms.get_common_cbc_transforms(
-                parameters, fp.variable_args)
+                parameters, fp.model_params)
 
             # read samples from file
             samples = fp.read_samples(
@@ -759,7 +759,7 @@ def injections_from_cli(opts):
     parameters, _ = parse_parameters_opt(opts.parameters)
     if parameters is None:
         with InferenceFile(input_files[0], 'r') as fp:
-            parameters = fp.variable_args
+            parameters = fp.model_params
     injections = None
     # loop over all input files getting the injection files
     for input_file in input_files:
