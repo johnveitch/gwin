@@ -70,7 +70,7 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
         if model_call is None:
             model_call = model
 
-        ndim = len(model.variable_args)
+        ndim = len(model.model_params)
         sampler = emcee.EnsembleSampler(nwalkers, ndim,
                                         model_call,
                                         pool=pool)
@@ -280,7 +280,7 @@ class EmceePTSampler(BaseMCMCSampler):
 
         # construct the sampler: PTSampler needs the likelihood and prior
         # functions separately
-        ndim = len(model.variable_args)
+        ndim = len(model.model_params)
         sampler = emcee.PTSampler(ntemps, nwalkers, ndim,
                                   _callloglikelihood(model_call),
                                   _callprior(model_call),
@@ -382,11 +382,11 @@ class EmceePTSampler(BaseMCMCSampler):
         # create a (nwalker, ndim) array for initial positions
         ntemps = self.ntemps
         nwalkers = self.nwalkers
-        ndim = len(self.variable_args)
+        ndim = len(self.model_params)
         p0 = numpy.ones((ntemps, nwalkers, ndim))
         # if samples are given then use those as initial positions
         if samples_file is not None:
-            samples = self.read_samples(samples_file, self.variable_args,
+            samples = self.read_samples(samples_file, self.model_params,
                                         iteration=-1, temps='all',
                                         flatten=False)[..., 0]
             # transform to sampling parameter space
@@ -397,7 +397,7 @@ class EmceePTSampler(BaseMCMCSampler):
             samples = self.model.prior_rvs(
                 size=nwalkers*ntemps, prior=prior).reshape((ntemps, nwalkers))
         # convert to array
-        for i, param in enumerate(self.sampling_args):
+        for i, param in enumerate(self.sampling_params):
             p0[..., i] = samples[param]
         self._p0 = p0
         return p0
@@ -756,7 +756,7 @@ class EmceePTSampler(BaseMCMCSampler):
     def compute_acfs(cls, fp, start_index=None, end_index=None,
                      per_walker=False, walkers=None, parameters=None,
                      temps=None):
-        """Computes the autocorrleation function of the variable args in the
+        """Computes the autocorrleation function of the model params in the
         given file.
 
         By default, parameter values are averaged over all walkers at each
@@ -782,7 +782,7 @@ class EmceePTSampler(BaseMCMCSampler):
             default) all walkers will be used.
         parameters : optional, str or array
             Calculate the ACF for only the given parameters. If None (the
-            default) will calculate the ACF for all of the variable args.
+            default) will calculate the ACF for all of the model params.
         temps : optional, (list of) int or 'all'
             The temperature index (or list of indices) to retrieve. If None
             (the default), the ACF will only be computed for the coldest (= 0)
@@ -799,7 +799,7 @@ class EmceePTSampler(BaseMCMCSampler):
         """
         acfs = {}
         if parameters is None:
-            parameters = fp.variable_args
+            parameters = fp.model_params
         if isinstance(parameters, str) or isinstance(parameters, unicode):
             parameters = [parameters]
         if isinstance(temps, int):
@@ -852,7 +852,7 @@ class EmceePTSampler(BaseMCMCSampler):
 
     @classmethod
     def compute_acls(cls, fp, start_index=None, end_index=None):
-        """Computes the autocorrleation length for all variable args and
+        """Computes the autocorrleation length for all model params and
         temperatures in the given file.
 
         Parameter values are averaged over all walkers at each iteration and
@@ -881,7 +881,7 @@ class EmceePTSampler(BaseMCMCSampler):
         if end_index is None:
             end_index = fp.niterations
         tidx = numpy.arange(fp.ntemps)
-        for param in fp.variable_args:
+        for param in fp.model_params:
             these_acls = numpy.zeros(fp.ntemps, dtype=int)
             for tk in tidx:
                 samples = cls.read_samples(fp, param, thin_start=start_index,
@@ -945,7 +945,7 @@ class EmceePTSampler(BaseMCMCSampler):
         # method, so we'll implement a dummy one
         ntemps = fp.ntemps
         nwalkers = fp.nwalkers
-        ndim = len(fp.variable_args)
+        ndim = len(fp.model_params)
         dummy_sampler = emcee.PTSampler(ntemps, nwalkers, ndim, None,
                                         None, betas=betas)
         return dummy_sampler.thermodynamic_integration_log_evidence(

@@ -62,7 +62,7 @@ class MCMCSampler(BaseMCMCSampler):
         # initialize
         super(MCMCSampler, self).__init__(sampler, model)
         self.dtype = numpy.dtype([(name, None) for name in
-                                  ('lnpost',) + self.sampling_args])
+                                  ('lnpost',) + self.sampling_params])
         # Harcoding the number of walkers to 1.
         # nwalkers should not be a BaseMCMCSampler property.
         self._nwalkers = 1
@@ -91,13 +91,13 @@ class MCMCSampler(BaseMCMCSampler):
     def chain(self):
         """This function should return the past samples as a
         [additional dimensions x] niterations x ndim array, where ndim are the
-        number of sampling args, niterations the number of iterations, and
+        number of sampling params, niterations the number of iterations, and
         additional dimensions are any additional dimensions used by the
         sampler (e.g, walkers, temperatures).
         """
         # Adding the nwalkers dimention, and converting to an ndarray.
-        return self._chain[list(self.sampling_args)].view(numpy.float).reshape(
-            (1,) + self._chain.shape + (-1,))
+        return self._chain[list(self.sampling_params)].view(
+            numpy.float).reshape((1,) + self._chain.shape + (-1,))
         # Copy needed to avoid numpy 1.13 warning
 
     @property
@@ -172,10 +172,10 @@ class MCMCSampler(BaseMCMCSampler):
         for i in range(start, niterations-1):
 
             logplr_old = self._chain['lnpost'][i]
-            # As _chain is a structured numpy array and self.sampling_args is a
-            # tuple, a list() conversion is needed here.
+            # As _chain is a structured numpy array and self.sampling_params is
+            # a tuple, a list() conversion is needed here.
             # This is not ideal being in the inner loop.
-            samples = self._chain[list(self.sampling_args)][i]
+            samples = self._chain[list(self.sampling_params)][i]
 
             # Dummy proposal
             samples_prop = [sample + numpy.random.normal(loc=0.0, scale=1.0)
