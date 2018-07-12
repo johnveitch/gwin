@@ -111,11 +111,11 @@ class BaseModel(object):
         None provided, will use ``_noprior``, which returns 0 for all parameter
         values.
     sampling_params : list, optional
-        Replace one or more of the ``variable_params`` with the given parameters
-        for sampling.
+        Replace one or more of the ``variable_params`` with the given
+        parameters for sampling.
     replace_parameters : list, optional
-        The ``variable_params`` to replace with sampling parameters. Must be the
-        same length as ``sampling_params``.
+        The ``variable_params`` to replace with sampling parameters. Must be
+        the same length as ``sampling_params``.
     sampling_transforms : list, optional
         List of transforms to use to go between the ``variable_params`` and the
         sampling parameters. Required if ``sampling_params`` is not None.
@@ -311,16 +311,17 @@ class BaseModel(object):
         # get prior distribution for each variable parameter
         logging.info("Setting up priors for each parameter")
         dists = distributions.read_distributions_from_config(cp, prior_section)
-        constraints = distributions.read_constraints_from_config(cp,
-            constraint_section)
+        constraints = distributions.read_constraints_from_config(
+            cp, constraint_section)
         return distributions.JointDistribution(variable_params, *dists,
-            constraints=constraints)
+                                               constraints=constraints)
 
     @classmethod
     def _init_args_from_config(cls, cp, section, prior_section,
-            mparams_section, sargs_section, constraint_section):
+                               vparams_section, sparams_section,
+                               constraint_section):
         """Helper function for loading parameters.
-        
+
         For details on parameters, see ``from_config``.
         """
         # check that the name exists and matches
@@ -330,13 +331,14 @@ class BaseModel(object):
                              name, cls.name))
         # get model parameters
         # Requires PyCBC 1.11.2
-        variable_params, static_params = distributions.read_params_from_config(cp,
-            prior_section=prior_section, vargs_section=mparams_section,
-            sargs_section=sargs_section)
+        variable_params, static_params = distributions.read_params_from_config(
+            cp, prior_section=prior_section, vargs_section=vparams_section,
+            sparams_section=sparams_section)
         # get prior
         prior = cls.prior_from_config(cp, variable_params, prior_section,
-            constraint_section)
-        args = {'variable_params': variable_params, 'static_params': static_params,
+                                      constraint_section)
+        args = {'variable_params': variable_params,
+                'static_params': static_params,
                 'prior': prior}
         # get sampling transforms and any other keyword arguments provided
         args.update(cls.sampling_transforms_from_config(cp))
@@ -345,9 +347,10 @@ class BaseModel(object):
         return args
 
     def from_config(cls, cp, section="model", prior_section="prior",
-            mparams_section='variable_params', sargs_section='static_params',
-            constraint_section='constraint',
-            **kwargs):
+                    vparams_section='variable_params',
+                    sparams_section='static_params',
+                    constraint_section='constraint',
+                    **kwargs):
         """Initializes an instance of this class from the given config file.
 
         Parameters
@@ -363,9 +366,9 @@ class BaseModel(object):
             All additional keyword arguments are passed to the class. Any
             provided keyword will over ride what is in the config file.
         """
-        args = cls._init_args_from_config(cp, section=section,
-            prior_section=prior_section, mparams_section=mparams_section,
-            sargs_section=sargs_section, constraint_section=constraint_section)
+        args = cls._init_args_from_config(cp, section, prior_section,
+                                          vparams_section, sparams_section,
+                                          constraint_section)
         args.update(kwargs)
         return cls(**args)
 
@@ -426,8 +429,8 @@ class BaseModel(object):
 
     def logjacobian(self, **params):
         r"""Returns the log of the jacobian needed to transform pdfs in the
-        ``variable_params`` parameter space to the ``sampling_params`` parameter
-        space.
+        ``variable_params`` parameter space to the ``sampling_params``
+        parameter space.
 
         Let :math:`\mathbf{x}` be the set of variable parameters,
         :math:`\mathbf{y} = f(\mathbf{x})` the set of sampling parameters, and
@@ -480,9 +483,9 @@ class BaseModel(object):
     def prior_rvs(self, size=1, prior=None):
         """Returns random variates drawn from the prior.
 
-        If the ``sampling_params`` are different from the ``variable_params``, the
-        variates are transformed to the `sampling_params` parameter space before
-        being returned.
+        If the ``sampling_params`` are different from the ``variable_params``,
+        the variates are transformed to the `sampling_params` parameter space
+        before being returned.
 
         Parameters
         ----------
@@ -536,8 +539,8 @@ class BaseModel(object):
         loglr : float, optional
             The value of the log likelihood-ratio.
         logjacobian : float, optional
-            The value of the log jacobian used to go from the ``variable_params``
-            to the sampling args.
+            The value of the log jacobian used to go from the
+            ``variable_params`` to the ``sampling_params``.
 
         Returns
         -------
@@ -722,16 +725,15 @@ class DataModel(BaseModel):
 
     @classmethod
     def _init_args_from_config(cls, cp, section, prior_section,
-            mparams_section, sargs_section, constraint_section):
-        """Helper function for loading parameters.
-        
-        Adds loading waveform_transforms.
-        
+                               vparams_section, sparams_section,
+                               constraint_section):
+        """Adds loading waveform_transforms to parent function.
+
         For details on parameters, see ``from_config``.
         """
         args = super(DataModel, cls)._init_args_from_config(
-            cp, section, prior_section, mparams_section,
-            sargs_section, constraint_section)
+            cp, section, prior_section, vparams_section,
+            sparams_section, constraint_section)
         # add waveform transforms to the arguments
         if any(cp.get_subsections('waveform_transforms')):
             logging.info("Loading waveform transforms")
@@ -745,8 +747,8 @@ class DataModel(BaseModel):
     def from_config(cls, cp, data, delta_f=None, delta_t=None,
                     gates=None, recalibration=None,
                     section="model", prior_section="prior",
-                    mparams_section='variable_params',
-                    sargs_section='static_params',
+                    vparams_section='variable_params',
+                    sparams_section='static_params',
                     constraint_section='constraint',
                     **kwargs):
         """Initializes an instance of this class from the given config file.
@@ -782,7 +784,8 @@ class DataModel(BaseModel):
         if data is None:
             raise ValueError("must provide data")
         args = cls._init_args_from_config(cp, section, prior_section,
-            mparams_section, sargs_section, constraint_section)
+                                          vparams_section, sparams_section,
+                                          constraint_section)
         args['data'] = data
         args.update(kwargs)
 
@@ -810,7 +813,7 @@ class DataModel(BaseModel):
 
 
 def read_sampling_params_from_config(cp, section_group=None,
-                                   section='sampling_params'):
+                                     section='sampling_params'):
     """Reads sampling parameters from the given config file.
 
     Parameters are read from the `[({section_group}_){section}]` section.

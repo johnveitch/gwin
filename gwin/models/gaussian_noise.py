@@ -200,7 +200,7 @@ class GaussianNoise(DataModel):
         # set up the boiler-plate attributes; note: we'll compute the
         # log evidence later
         super(GaussianNoise, self).__init__(variable_params, data,
-            waveform_generator, **kwargs)
+                                            waveform_generator, **kwargs)
         # check that the data and waveform generator have the same detectors
         if (sorted(waveform_generator.detectors.keys()) !=
                 sorted(self._data.keys())):

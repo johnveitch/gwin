@@ -27,8 +27,8 @@ from .base import BaseModel
 class TestNormal(BaseModel):
     r"""The test distribution is an multi-variate normal distribution.
 
-    The number of dimensions is set by the number of ``variable_params`` that are
-    passed. For details on the distribution used, see
+    The number of dimensions is set by the number of ``variable_params`` that
+    are passed. For details on the distribution used, see
     ``scipy.stats.multivariate_normal``.
 
     Parameters
@@ -77,8 +77,8 @@ class TestEggbox(BaseModel):
         \log \mathcal{L}(\Theta) = \left[
             2+\prod_{i=1}^{n}\cos\left(\frac{\theta_{i}}{2}\right)\right]^{5}
 
-    The number of dimensions is set by the number of ``variable_params`` that are
-    passed.
+    The number of dimensions is set by the number of ``variable_params`` that
+    are passed.
 
     Parameters
     ----------
@@ -112,8 +112,8 @@ class TestRosenbrock(BaseModel):
         \log \mathcal{L}(\Theta) = -\sum_{i=1}^{n-1}[
             (1-\theta_{i})^{2}+100(\theta_{i+1} - \theta_{i}^{2})^{2}]
 
-    The number of dimensions is set by the number of ``variable_params`` that are
-    passed.
+    The number of dimensions is set by the number of ``variable_params`` that
+    are passed.
 
     Parameters
     ----------
