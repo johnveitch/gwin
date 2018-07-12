@@ -44,7 +44,7 @@ b = 2
 [model]
 name = gaussian_noise
 
-[model_params]
+[variable_params]
 mass1 =
 mass2 =
 

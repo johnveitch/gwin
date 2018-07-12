@@ -83,7 +83,7 @@ class GaussianNoise(DataModel):
 
     Parameters
     ----------
-    model_params : (tuple of) string(s)
+    variable_params : (tuple of) string(s)
         A tuple of parameter names that will be varied.
     waveform_generator : generator class
         A generator class that creates waveforms. This must have a ``generate``
@@ -128,10 +128,10 @@ class GaussianNoise(DataModel):
     >>> fmin = 30.
     >>> m1, m2, s1z, s2z, tsig, ra, dec, pol, dist = (
             38.6, 29.3, 0., 0., 3.1, 1.37, -1.26, 2.76, 3*500.)
-    >>> model_params = ['tc']
+    >>> variable_params = ['tc']
     >>> generator = FDomainDetFrameGenerator(
             FDomainCBCGenerator, 0.,
-            variable_args=model_params, detectors=['H1', 'L1'],
+            variable_args=variable_params, detectors=['H1', 'L1'],
             delta_f=1./seglen, f_lower=fmin,
             approximant='SEOBNRv2_ROM_DoubleSpin',
             mass1=m1, mass2=m2, spin1z=s1z, spin2z=s2z,
@@ -140,7 +140,7 @@ class GaussianNoise(DataModel):
     >>> psd = pypsd.aLIGOZeroDetHighPower(N, 1./seglen, 20.)
     >>> psds = {'H1': psd, 'L1': psd}
     >>> model = gwin.models.GaussianNoise(
-            model_params, signal, generator, fmin, psds=psds,
+            variable_params, signal, generator, fmin, psds=psds,
             return_meta=False)
 
     Now compute the log likelihood ratio and prior-weighted likelihood ratio;
@@ -183,8 +183,8 @@ class GaussianNoise(DataModel):
 
     >>> from pycbc import distributions
     >>> uniform_prior = distributions.Uniform(tc=(tsig-0.2,tsig+0.2))
-    >>> prior = distributions.JointDistribution(model_params, uniform_prior)
-    >>> model = gwin.models.GaussianNoise(model_params,
+    >>> prior = distributions.JointDistribution(variable_params, uniform_prior)
+    >>> model = gwin.models.GaussianNoise(variable_params,
             signal, generator, 20., psds=psds, prior=prior,
             return_meta=False)
     >>> model.logplr(tc=tsig)
@@ -194,12 +194,12 @@ class GaussianNoise(DataModel):
     """
     name = 'gaussian_noise'
 
-    def __init__(self, model_params, data, waveform_generator,
+    def __init__(self, variable_params, data, waveform_generator,
                  f_lower, psds=None, f_upper=None, norm=None,
                  **kwargs):
         # set up the boiler-plate attributes; note: we'll compute the
         # log evidence later
-        super(GaussianNoise, self).__init__(model_params, data,
+        super(GaussianNoise, self).__init__(variable_params, data,
             waveform_generator, **kwargs)
         # check that the data and waveform generator have the same detectors
         if (sorted(waveform_generator.detectors.keys()) !=

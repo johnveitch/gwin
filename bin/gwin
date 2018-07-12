@@ -59,7 +59,7 @@ parser.add_argument("--seed", type=int, default=0,
 parser.add_argument("--samples-file", default=None,
                     help="Use an iteration from an InferenceFile as the "
                          "initial proposal distribution. The same "
-                         "number of walkers and the same [model_params] "
+                         "number of walkers and the same [variable_params] "
                          "section in the configuration file should be used. "
                          "The priors must allow encompass the initial "
                          "positions from the InferenceFile being read.")
@@ -272,7 +272,7 @@ with ctx:
             cp, section="initial")
         constraints = distributions.read_constraints_from_config(cp,
             constraint_section="initial_constraint")
-        init_prior = distributions.JointDistribution(sampler.model_params,
+        init_prior = distributions.JointDistribution(sampler.variable_params,
             *initial_dists, **{"constraints" : constraints})
     else:
         init_prior = None

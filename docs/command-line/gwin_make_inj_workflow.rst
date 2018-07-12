@@ -49,6 +49,8 @@ A simple workflow configuration file::
     ; command line options use --help for more information
     ninjections = 1
     dist-section = prior
+    variable-args-section = variable_params
+    static-args-section = static_params
 
     [inference]
     ; command line options use --help for more information

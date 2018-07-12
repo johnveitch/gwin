@@ -192,7 +192,7 @@ else:
 
 # get samples from InferenceFile
 file_parameters, trans = transforms.get_common_cbc_transforms(
-                                         parameters, fp.model_params)
+                                         parameters, fp.variable_params)
 samples = fp.read_samples(file_parameters, thin_start=thin_start,
                           thin_interval=thinint, thin_end=thin_end,
                           iteration=itermask, flatten=False)

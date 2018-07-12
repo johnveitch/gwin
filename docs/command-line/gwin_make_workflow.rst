@@ -118,7 +118,7 @@ You will also need a configuration file with sections that tells ``pycbc_inferen
     [model]
     name = gaussian_noise
 
-    [model_params]
+    [variable_params]
     ; parameters to vary in inference sampler
     tc =
     mass1 =
@@ -182,7 +182,7 @@ A simple configuration file for parameter estimation on the ringdown is::
     [model]
     name = gaussian_noise
 
-    [model_params]
+    [variable_params]
     ; parameters to vary in inference sampler
     tc =
     f_0 =
@@ -227,7 +227,7 @@ A simple configuration file for parameter estimation on the ringdown is::
     ; how to construct prior distribution
     name = uniform_angle
 
-If you want to use another variable parameter in the inference sampler then add its name to ``[model_params]`` and add a prior section like shown above.
+If you want to use another variable parameter in the inference sampler then add its name to ``[variable_params]`` and add a prior section like shown above.
 
 =====================
 Generate the workflow

@@ -27,13 +27,13 @@ from .base import BaseModel
 class TestNormal(BaseModel):
     r"""The test distribution is an multi-variate normal distribution.
 
-    The number of dimensions is set by the number of ``model_params`` that are
+    The number of dimensions is set by the number of ``variable_params`` that are
     passed. For details on the distribution used, see
     ``scipy.stats.multivariate_normal``.
 
     Parameters
     ----------
-    model_params : (tuple of) string(s)
+    variable_params : (tuple of) string(s)
         A tuple of parameter names that will be varied.
     mean : array-like, optional
         The mean values of the parameters. If None provide, will use 0 for all
@@ -47,26 +47,26 @@ class TestNormal(BaseModel):
     """
     name = "test_normal"
 
-    def __init__(self, model_params, mean=None, cov=None, **kwargs):
+    def __init__(self, variable_params, mean=None, cov=None, **kwargs):
         # set up base likelihood parameters
-        super(TestNormal, self).__init__(model_params, **kwargs)
+        super(TestNormal, self).__init__(variable_params, **kwargs)
         # set the lognl to 0 since there is no data
         self.set_lognl(0.)
         # store the pdf
         if mean is None:
-            mean = [0.]*len(model_params)
+            mean = [0.]*len(variable_params)
         if cov is None:
-            cov = [1.]*len(model_params)
+            cov = [1.]*len(variable_params)
         self._dist = stats.multivariate_normal(mean=mean, cov=cov)
         # check that the dimension is correct
-        if self._dist.dim != len(model_params):
-            raise ValueError("dimension mis-match between model_params and "
+        if self._dist.dim != len(variable_params):
+            raise ValueError("dimension mis-match between variable_params and "
                              "mean and/or cov")
 
     def loglikelihood(self, **params):
         """Returns the log pdf of the multivariate normal.
         """
-        return self._dist.logpdf([params[p] for p in self.model_params])
+        return self._dist.logpdf([params[p] for p in self.variable_params])
 
 
 class TestEggbox(BaseModel):
@@ -77,12 +77,12 @@ class TestEggbox(BaseModel):
         \log \mathcal{L}(\Theta) = \left[
             2+\prod_{i=1}^{n}\cos\left(\frac{\theta_{i}}{2}\right)\right]^{5}
 
-    The number of dimensions is set by the number of ``model_params`` that are
+    The number of dimensions is set by the number of ``variable_params`` that are
     passed.
 
     Parameters
     ----------
-    model_params : (tuple of) string(s)
+    variable_params : (tuple of) string(s)
         A tuple of parameter names that will be varied.
     **kwargs :
         All other keyword arguments are passed to ``BaseModel``.
@@ -90,9 +90,9 @@ class TestEggbox(BaseModel):
     """
     name = "test_eggbox"
 
-    def __init__(self, model_params, **kwargs):
+    def __init__(self, variable_params, **kwargs):
         # set up base likelihood parameters
-        super(TestEggbox, self).__init__(model_params, **kwargs)
+        super(TestEggbox, self).__init__(variable_params, **kwargs)
 
         # set the lognl to 0 since there is no data
         self.set_lognl(0.)
@@ -101,7 +101,7 @@ class TestEggbox(BaseModel):
         """Returns the log pdf of the eggbox function.
         """
         return (2 + numpy.prod(numpy.cos([
-            params[p]/2. for p in self.model_params]))) ** 5
+            params[p]/2. for p in self.variable_params]))) ** 5
 
 
 class TestRosenbrock(BaseModel):
@@ -112,12 +112,12 @@ class TestRosenbrock(BaseModel):
         \log \mathcal{L}(\Theta) = -\sum_{i=1}^{n-1}[
             (1-\theta_{i})^{2}+100(\theta_{i+1} - \theta_{i}^{2})^{2}]
 
-    The number of dimensions is set by the number of ``model_params`` that are
+    The number of dimensions is set by the number of ``variable_params`` that are
     passed.
 
     Parameters
     ----------
-    model_params : (tuple of) string(s)
+    variable_params : (tuple of) string(s)
         A tuple of parameter names that will be varied.
     **kwargs :
         All other keyword arguments are passed to ``BaseModel``.
@@ -125,9 +125,9 @@ class TestRosenbrock(BaseModel):
     """
     name = "test_rosenbrock"
 
-    def __init__(self, model_params, **kwargs):
+    def __init__(self, variable_params, **kwargs):
         # set up base likelihood parameters
-        super(TestRosenbrock, self).__init__(model_params, **kwargs)
+        super(TestRosenbrock, self).__init__(variable_params, **kwargs)
 
         # set the lognl to 0 since there is no data
         self.set_lognl(0.)
@@ -136,7 +136,7 @@ class TestRosenbrock(BaseModel):
         """Returns the log pdf of the Rosenbrock function.
         """
         logl = 0
-        p = [params[p] for p in self.model_params]
+        p = [params[p] for p in self.variable_params]
         for i in range(len(p) - 1):
             logl -= ((1 - p[i])**2 + 100 * (p[i+1] - p[i]**2)**2)
         return logl
@@ -153,7 +153,7 @@ class TestVolcano(BaseModel):
 
     Parameters
     ----------
-    model_params : (tuple of) string(s)
+    variable_params : (tuple of) string(s)
         A tuple of parameter names that will be varied. Must have length 2.
     **kwargs :
         All other keyword arguments are passed to ``BaseModel``.
@@ -161,12 +161,12 @@ class TestVolcano(BaseModel):
     """
     name = "test_volcano"
 
-    def __init__(self, model_params, **kwargs):
+    def __init__(self, variable_params, **kwargs):
         # set up base likelihood parameters
-        super(TestVolcano, self).__init__(model_params, **kwargs)
+        super(TestVolcano, self).__init__(variable_params, **kwargs)
 
         # make sure there are exactly two variable args
-        if len(self.model_params) != 2:
+        if len(self.variable_params) != 2:
             raise ValueError("TestVolcano distribution requires exactly "
                              "two variable args")
 
@@ -176,7 +176,7 @@ class TestVolcano(BaseModel):
     def loglikelihood(self, **params):
         """Returns the log pdf of the 2D volcano function.
         """
-        p = [params[p] for p in self.model_params]
+        p = [params[p] for p in self.variable_params]
         r = numpy.sqrt(p[0]**2 + p[1]**2)
         mu, sigma = 5.0, 2.0
         return 25 * (

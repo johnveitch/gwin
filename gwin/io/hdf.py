@@ -95,7 +95,7 @@ class _PosteriorOnlyParser(object):
     def n_independent_samples(cls, fp):
         """Returns the number of independent samples stored in the file.
         """
-        return cls.read_samples(fp, fp.model_params[0]).size
+        return cls.read_samples(fp, fp.variable_params[0]).size
 
 
 class InferenceFile(h5py.File):
@@ -154,15 +154,15 @@ class InferenceFile(h5py.File):
         return self.attrs["model"]
 
     @property
-    def model_params(self):
-        """Returns list of model_params.
+    def variable_params(self):
+        """Returns list of variable_params.
 
         Returns
         -------
-        model_params : {list, str}
-            List of str that contain model_params keys.
+        variable_params : {list, str}
+            List of str that contain variable_params keys.
         """
-        return self.attrs["model_params"]
+        return self.attrs["variable_params"]
 
     @property
     def static_params(self):
@@ -716,10 +716,10 @@ class InferenceFile(h5py.File):
         # select the samples to copy
         logging.info("Reading samples to copy")
         if parameters is None:
-            parameters = self.model_params
+            parameters = self.variable_params
         # if list of desired parameters is different, rename model params
-        if set(parameters) != set(self.model_params):
-            other.attrs['model_params'] = parameters
+        if set(parameters) != set(self.variable_params):
+            other.attrs['variable_params'] = parameters
         # if only the posterior is desired, we'll flatten the results
         if not posterior_only and not self.posterior_only:
             kwargs['flatten'] = False
@@ -731,7 +731,7 @@ class InferenceFile(h5py.File):
             arrs.update({p: samples[p] for p in parameters if
                          p not in parameter_names})
             samples = FieldArray.from_kwargs(**arrs)
-            other.attrs['model_params'] = samples.fieldnames
+            other.attrs['variable_params'] = samples.fieldnames
         logging.info("Writing samples")
         other.samples_parser.write_samples_group(other, self.samples_group,
                                                  samples.fieldnames, samples)

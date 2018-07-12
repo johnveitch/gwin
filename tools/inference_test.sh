@@ -5,7 +5,7 @@ cat > ana_inf.ini <<EOL
 [model]
 name = test_normal
 
-[model_params]
+[variable_params]
 x =
 y =
 

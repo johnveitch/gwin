@@ -77,7 +77,7 @@ class KombineSampler(BaseMCMCSampler):
             model_call = model
 
         # construct sampler for use in KombineSampler
-        ndim = len(model.model_params)
+        ndim = len(model.variable_params)
         count = 1 if pool is None else pool.count
         sampler = kombine.Sampler(nwalkers, ndim, model_call,
                                   transd=transd, pool=pool,
@@ -236,7 +236,7 @@ class KombineSampler(BaseMCMCSampler):
             # dataset doesn't exist yet
             fp.create_dataset(dataset_name, shape,
                               maxshape=(self._sampler._kde_size,
-                                        len(self.model_params)),
+                                        len(self.variable_params)),
                               dtype=float, fletcher32=True)
             fp[dataset_name][:] = kde.data
 

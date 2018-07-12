@@ -65,10 +65,10 @@ class _BaseSampler(object):
         raise NotImplementedError("from_cli function not set")
 
     @property
-    def model_params(self):
+    def variable_params(self):
         """Returns the parameters varied in the model.
         """
-        return self.model.model_params
+        return self.model.variable_params
 
     @property
     def sampling_params(self):
@@ -165,7 +165,7 @@ class _BaseSampler(object):
         """
         fp.attrs['sampler'] = self.name
         fp.attrs['model'] = self.model.name
-        fp.attrs['model_params'] = list(self.model_params)
+        fp.attrs['variable_params'] = list(self.variable_params)
         fp.attrs['sampling_params'] = list(self.sampling_params)
         fp.attrs["niterations"] = self.niterations
         fp.attrs["lognl"] = self.model.lognl
@@ -298,11 +298,11 @@ class BaseMCMCSampler(_BaseSampler):
         """
         # create a (nwalker, ndim) array for initial positions
         nwalkers = self.nwalkers
-        ndim = len(self.model_params)
+        ndim = len(self.variable_params)
         p0 = numpy.ones((nwalkers, ndim))
         # if samples are given then use those as initial positions
         if samples_file is not None:
-            samples = self.read_samples(samples_file, self.model_params,
+            samples = self.read_samples(samples_file, self.variable_params,
                                         iteration=-1)
             # transform to sampling parameter space
             samples = self.model.apply_sampling_transforms(
@@ -485,7 +485,7 @@ class BaseMCMCSampler(_BaseSampler):
         """
         # samples is a nwalkers x niterations field array
         samples = self.samples
-        parameters = self.model_params
+        parameters = self.variable_params
         samples_group = fp.samples_group
         # write data
         self.write_samples_group(fp, samples_group, parameters, samples,
@@ -727,7 +727,7 @@ class BaseMCMCSampler(_BaseSampler):
         if not fp.is_burned_in:
             return 0
         # we'll just read a single parameter from the file
-        samples = cls.read_samples(fp, fp.model_params[0])
+        samples = cls.read_samples(fp, fp.variable_params[0])
         return samples.size
 
     @staticmethod
@@ -794,7 +794,7 @@ class BaseMCMCSampler(_BaseSampler):
         """
         acfs = {}
         if parameters is None:
-            parameters = fp.model_params
+            parameters = fp.variable_params
         if isinstance(parameters, str) or isinstance(parameters, unicode):
             parameters = [parameters]
         for param in parameters:
@@ -845,7 +845,7 @@ class BaseMCMCSampler(_BaseSampler):
             A dictionary giving the ACL for each parameter.
         """
         acls = {}
-        for param in fp.model_params:
+        for param in fp.variable_params:
             samples = cls.read_samples(fp, param,
                                        thin_start=start_index,
                                        thin_interval=1, thin_end=end_index,
