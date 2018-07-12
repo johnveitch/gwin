@@ -305,12 +305,10 @@ class BaseMCMCSampler(_BaseSampler):
             samples = self.read_samples(samples_file, self.variable_params,
                                         iteration=-1)
             # transform to sampling parameter space
-            samples = self.model.apply_sampling_transforms(
-                samples)
+            samples = self.model.apply_sampling_transforms(samples)
         # draw random samples if samples are not provided
         else:
-            samples = self.model.prior_rvs(size=nwalkers,
-                                                          prior=prior)
+            samples = self.model.prior_rvs(size=nwalkers, prior=prior)
         # convert to 2D array
         for i, param in enumerate(self.sampling_params):
             p0[:, i] = samples[param]
@@ -493,7 +491,7 @@ class BaseMCMCSampler(_BaseSampler):
                                  max_iterations=max_iterations)
 
     def write_model_stats(self, fp, start_iteration=None,
-                               max_iterations=None):
+                          max_iterations=None):
         """Writes the ``model_stats`` to the given file.
 
         Results are written to:
@@ -581,7 +579,7 @@ class BaseMCMCSampler(_BaseSampler):
         self.write_chain(fp, start_iteration=start_iteration,
                          max_iterations=max_iterations)
         self.write_model_stats(fp, start_iteration=start_iteration,
-                                    max_iterations=max_iterations)
+                               max_iterations=max_iterations)
         self.write_acceptance_fraction(fp)
         self.write_state(fp)
 

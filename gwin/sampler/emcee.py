@@ -219,7 +219,7 @@ class EmceeEnsembleSampler(BaseMCMCSampler):
         self.write_chain(fp, start_iteration=start_iteration,
                          max_iterations=max_iterations)
         self.write_model_stats(fp, start_iteration=start_iteration,
-                                    max_iterations=max_iterations)
+                               max_iterations=max_iterations)
         self.write_acceptance_fraction(fp)
         self.write_state(fp)
 
@@ -591,7 +591,7 @@ class EmceePTSampler(BaseMCMCSampler):
         self.write_chain(fp, start_iteration=start_iteration,
                          max_iterations=max_iterations)
         self.write_model_stats(fp, start_iteration=start_iteration,
-                                    max_iterations=max_iterations)
+                               max_iterations=max_iterations)
         self.write_acceptance_fraction(fp)
         self.write_state(fp)
 

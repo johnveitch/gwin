@@ -40,8 +40,8 @@ from gwin import sampler
 
 from utils import _TestBase
 
-MODELS = [n for n in models.models if
-                         not n.startswith('test_')]
+MODELS = [n for n in models.models
+          if not n.startswith('test_')]
 
 
 # -- parametrisation ----------------------------------------------------------
@@ -99,7 +99,7 @@ class TestSamplers(_TestBase):
 
     @pytest.fixture
     def model(self, fd_waveform, fd_waveform_generator, prior_eval,
-                        zdhp_psd, request):
+              zdhp_psd, request):
         eval_class = models.models[request.param]
         return eval_class(
             fd_waveform_generator.variable_args,

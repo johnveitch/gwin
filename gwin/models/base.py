@@ -190,8 +190,8 @@ class BaseModel(object):
                 raise ValueError("must provide sampling transforms for the "
                                  "sampling parameters")
             # pull out the replaced parameters
-            self._sampling_params = [arg for arg in self._variable_params if
-                                   arg not in replace_parameters]
+            self._sampling_params = [arg for arg in self._variable_params
+                                     if arg not in replace_parameters]
             # add the sampling parameters
             self._sampling_params += sampling_params
             self._sampling_transforms = sampling_transforms
@@ -722,7 +722,6 @@ class DataModel(BaseModel):
                                                  inverse=False)
         return params
 
-
     @classmethod
     def _init_args_from_config(cls, cp, section, prior_section,
                                vparams_section, sparams_section,
@@ -741,7 +740,6 @@ class DataModel(BaseModel):
                 transforms.read_transforms_from_config(
                     cp, 'waveform_transforms')
         return args
-
 
     @classmethod
     def from_config(cls, cp, data, delta_f=None, delta_t=None,
