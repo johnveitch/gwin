@@ -104,7 +104,7 @@ class BaseModel(object):
     ----------
     model_params : (tuple of) string(s)
         A tuple of parameter names that will be varied.
-    static_args : dict, optional
+    static_params : dict, optional
         A dictionary of parameter names -> values to keep fixed.
     prior : callable, optional
         A callable class or function that computes the log of the prior. If
@@ -155,7 +155,7 @@ class BaseModel(object):
     """
     name = None
 
-    def __init__(self, model_params, static_args=None, prior=None,
+    def __init__(self, model_params, static_params=None, prior=None,
                  sampling_params=None, replace_parameters=None,
                  sampling_transforms=None, return_meta=True):
         # store variable and static args
@@ -164,9 +164,9 @@ class BaseModel(object):
         if not isinstance(model_params, tuple):
             model_params = tuple(model_params)
         self._model_params = model_params
-        if static_args is None:
-            static_args = {}
-        self._static_args = static_args
+        if static_params is None:
+            static_params = {}
+        self._static_params = static_params
         # store prior
         if prior is None:
             self._prior = _NoPrior()
@@ -330,13 +330,13 @@ class BaseModel(object):
                              name, cls.name))
         # get model parameters
         # Requires PyCBC 1.11.2
-        model_params, static_args = distributions.read_params_from_config(cp,
+        model_params, static_params = distributions.read_params_from_config(cp,
             prior_section=prior_section, vargs_section=mparams_section,
             sargs_section=sargs_section)
         # get prior
         prior = cls.prior_from_config(cp, model_params, prior_section,
             constraint_section)
-        args = {'model_params': model_params, 'static_args': static_args,
+        args = {'model_params': model_params, 'static_params': static_params,
                 'prior': prior}
         # get sampling transforms and any other keyword arguments provided
         args.update(cls.sampling_transforms_from_config(cp))
@@ -345,7 +345,7 @@ class BaseModel(object):
         return args
 
     def from_config(cls, cp, section="model", prior_section="prior",
-            mparams_section='model_params', sargs_section='static_args',
+            mparams_section='model_params', sargs_section='static_params',
             constraint_section='constraint',
             **kwargs):
         """Initializes an instance of this class from the given config file.
@@ -378,9 +378,9 @@ class BaseModel(object):
         return self._model_params
 
     @property
-    def static_args(self):
+    def static_params(self):
         """Returns the model's static arguments."""
-        return self._static_args
+        return self._static_params
 
     @property
     def sampling_params(self):
@@ -746,7 +746,7 @@ class DataModel(BaseModel):
                     gates=None, recalibration=None,
                     section="model", prior_section="prior",
                     mparams_section='model_params',
-                    sargs_section='static_args',
+                    sargs_section='static_params',
                     constraint_section='constraint',
                     **kwargs):
         """Initializes an instance of this class from the given config file.
@@ -788,13 +788,13 @@ class DataModel(BaseModel):
 
         model_params = args['model_params']
         try:
-            static_args = args['static_args']
+            static_params = args['static_params']
         except KeyError:
-            static_args = {}
+            static_params = {}
 
         # set up waveform generator
         try:
-            approximant = static_args['approximant']
+            approximant = static_params['approximant']
         except KeyError:
             raise ValueError("no approximant provided in the static args")
         generator_function = generator.select_waveform_generator(approximant)
@@ -803,7 +803,7 @@ class DataModel(BaseModel):
             variable_args=model_params, detectors=data.keys(),
             delta_f=delta_f, delta_t=delta_t,
             recalib=recalibration, gates=gates,
-            **static_args)
+            **static_params)
         args['waveform_generator'] = waveform_generator
 
         return cls(**args)

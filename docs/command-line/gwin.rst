@@ -66,9 +66,9 @@ given below. Any name that starts with ``test_`` is an analytic test
 distribution that requires no data or waveform generation; see the section
 below on running on an analytic distribution for more details.
 
-The other two required sections are ``[model_params]``, and ``[static_args]``.
+The other two required sections are ``[model_params]``, and ``[static_params]``.
 The ``[model_params]`` section contains a list of parameters that will be
-varied to obtain a posterior distribution. The ``[static_args]`` section
+varied to obtain a posterior distribution. The ``[static_params]`` section
 contains a list of parameters that are held fixed through out the run.
 
 Each parameter in ``[model_params]`` must have a subsection in ``[prior]``.
@@ -233,7 +233,7 @@ An example configuration file (named ``gwin.ini``) is::
     ra =
     dec =
 
-    [static_args]
+    [static_params]
     ; waveform parameters that will not change in MCMC
     approximant = IMRPhenomPv2
     f_lower = 18
@@ -322,7 +322,7 @@ parameters to specific values. Create the following file, calling it
 
     [model_params]
 
-    [static_args]
+    [static_params]
     tc = 1126259462.420
     mass1 = 37
     mass2 = 32

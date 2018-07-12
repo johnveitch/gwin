@@ -130,7 +130,7 @@ You will also need a configuration file with sections that tells ``pycbc_inferen
     dec =
     polarization =
 
-    [static_args]
+    [static_params]
     ; parameters that do not vary in inference sampler
     approximant = SEOBNRv2_ROM_DoubleSpin
     f_lower = 28.0
@@ -190,7 +190,7 @@ A simple configuration file for parameter estimation on the ringdown is::
     amp =
     phi =
 
-    [static_args]
+    [static_params]
     ; parameters that do not vary in inference sampler
     approximant = FdQNM
     ra = 2.21535724066

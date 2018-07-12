@@ -48,7 +48,7 @@ name = gaussian_noise
 mass1 =
 mass2 =
 
-[static_args]
+[static_params]
 ra = 0
 dec = 0
 extra = [1, 2, 3]

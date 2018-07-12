@@ -165,11 +165,11 @@ class InferenceFile(h5py.File):
         return self.attrs["model_params"]
 
     @property
-    def static_args(self):
-        """Returns a dictionary of the static_args. The keys are the argument
+    def static_params(self):
+        """Returns a dictionary of the static_params. The keys are the argument
         names, values are the value they were set to.
         """
-        return {arg: self.attrs[arg] for arg in self.attrs["static_args"]}
+        return {arg: self.attrs[arg] for arg in self.attrs["static_params"]}
 
     @property
     def sampling_params(self):

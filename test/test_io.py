@@ -81,11 +81,11 @@ class TestInferenceFile(object):
         empty.attrs['model_name'] = 'anything'
         assert empty.model_name == 'anything'
 
-    def test_static_args(self, empty):
+    def test_static_params(self, empty):
         empty.attrs['arg1'] = 1
         empty.attrs['arg2'] = 2
-        empty.attrs['static_args'] = ('arg1', 'arg2')
-        assert empty.static_args == {'arg1': 1, 'arg2': 2}
+        empty.attrs['static_params'] = ('arg1', 'arg2')
+        assert empty.static_params == {'arg1': 1, 'arg2': 2}
 
     def test_cmd(self, empty):
         empty.attrs['cmd'] = 'test command'
