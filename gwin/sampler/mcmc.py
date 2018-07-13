@@ -30,7 +30,8 @@ for parameter estimation.
 import numpy
 import logging
 
-from .base import BaseMCMCSampler
+from .base_mcmc import BaseMCMC
+from .base import BaseSampler
 
 
 #
@@ -41,7 +42,7 @@ from .base import BaseMCMCSampler
 # =============================================================================
 #
 
-class MCMCSampler(BaseMCMCSampler):
+class MCMCSampler(BaseMCMC,BaseSampler):
     """This class is used to construct the MCMC sampler.
 
     Parameters

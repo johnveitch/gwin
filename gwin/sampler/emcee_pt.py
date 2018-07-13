@@ -26,6 +26,8 @@ This modules provides classes and functions for using the emcee sampler
 packages for parameter estimation.
 """
 
+from .mcmc import MCMCSampler
+
 # This is needed for two reason
 # 1) pools freeze state when created and so classes *cannot be updated*
 # 2) methods cannot be pickled.
@@ -50,7 +52,7 @@ class _callloglikelihood(object):
         return self.callable(args, callfunc='loglikelihood')
 
 
-class EmceePTSampler(BaseMCMCSampler):
+class EmceePTSampler(MCMCSampler):
     """This class is used to construct a parallel-tempered MCMC sampler from
     the emcee package's PTSampler.
 

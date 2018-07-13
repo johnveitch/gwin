@@ -49,7 +49,7 @@ class BaseMCMC(object):
     _p0 = None
     _nwalkers = None
 
-    @abstractproperty(self):
+    @abstractproperty
     def samples_shape(self):
         """Should define what shape to expect samples to be in."""
         pass

@@ -29,7 +29,9 @@ packages for parameter estimation.
 from __future__ import absolute_import
 
 import numpy
-from .base import BaseMCMCSampler
+
+from .mcmc import MCMCSampler
+
 
 #
 # =============================================================================
@@ -40,7 +42,7 @@ from .base import BaseMCMCSampler
 #
 
 
-class KombineSampler(BaseMCMCSampler):
+class KombineSampler(MCMCSampler):
     """This class is used to construct the MCMC sampler from the kombine
     package.
 

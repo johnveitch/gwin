@@ -32,8 +32,7 @@ import numpy
 from pycbc.io import FieldArray
 from pycbc.filter import autocorrelation
 
-from .base import BaseMCMCSampler
-
+from .mcmc import MCMCSampler
 
 #
 # =============================================================================
@@ -43,7 +42,7 @@ from .base import BaseMCMCSampler
 # =============================================================================
 #
 
-class EmceeEnsembleSampler(BaseMCMC, BaseSampler):
+class EmceeEnsembleSampler(MCMCSampler):
     """This class is used to construct an MCMC sampler from the emcee
     package's EnsembleSampler.
 

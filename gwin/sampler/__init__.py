@@ -18,7 +18,8 @@ This modules provides a list of implemented samplers for parameter estimation.
 """
 
 from .kombine import KombineSampler
-from .emcee import (EmceeEnsembleSampler, EmceePTSampler)
+from .emcee import EmceeEnsembleSampler
+from .emcee_pt import EmceePTSampler
 from .mcmc import MCMCSampler
 
 # list of available samplers
